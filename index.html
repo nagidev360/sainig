@@ -53,7 +53,7 @@
 <section class="coin-panel" aria-label="SAINIG coins">
   <div class="coin-copy"><span class="eyebrow">SAINIG REWARDS</span><h2>Your Coins</h2><p class="muted">Earn coins through eligible rewarded activities when rewards are enabled.</p></div>
   <div class="coin-balance"><span class="coin-symbol">✦</span><strong id="coin-balance">0</strong><span>coins</span></div>
-  <div class="coin-task"><div><strong>Reward goal</strong><p>3 completed rewarded ads = 10 coins</p></div><span class="reward-status">Setup pending</span></div>
+  <div class="coin-task"><div><strong>Reward goal</strong><p>3 completed rewarded ads = 10 coins</p></div><span class="reward-status" id="coin-status">Checking balance…</span></div>
   <p class="coin-notice">Rewarded ads are not active yet. Coins will only be credited after an approved ad provider and secure reward verification are configured. Do not click or view regular AdSense ads to earn coins.</p>
 </section>
 <section id="activities" class="activities-head"><div><span class="eyebrow">GET INVOLVED</span><h2>Your next step</h2></div><p class="muted">Start small. Make it count.</p></section>
@@ -94,6 +94,15 @@ async function showAccount(user){
  $("login").classList.add("hidden");$("member-page").classList.remove("hidden");document.querySelector(".card").classList.add("hidden");$("public-info").classList.add("hidden");document.body.style.padding="0";
  const name=user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split("@")[0]||"Yuva Sainik";
  $("nav-name").textContent=name;$("welcome-title").textContent="Welcome, "+name;$("profile-name").textContent=name;$("profile-email").textContent=user.email||"";$("profile-id").textContent="Member ID: "+user.id;$("avatar-letter").textContent=name.trim().charAt(0).toUpperCase()||"Y";
+ await loadCoinBalance(user);
+}
+async function loadCoinBalance(user){
+ const balanceEl=$("coin-balance");
+ balanceEl.textContent="…";
+ const {data,error}=await client.from("sainig_coin_balances").select("balance").eq("user_id",user.id).maybeSingle();
+ if(error){console.error("Could not load SAINIG coin balance",error.message);balanceEl.textContent="—";$("coin-status").textContent="Balance temporarily unavailable";return;}
+ balanceEl.textContent=Number(data?.balance||0).toLocaleString("en-IN");
+ $("coin-status").textContent="Balance synced";
 }
 async function signOut(){await client.auth.signOut();location.reload()}
 $("page-signout").addEventListener("click",signOut);
