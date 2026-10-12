@@ -40,7 +40,7 @@
       <article><span>03</span><h3>Community connection</h3><p>Find updates and opportunities as SAINIG activities become available.</p></article>
     </div>
     <p class="public-note">Activities shown here are planned areas of focus. Availability may vary as the community develops.</p>
-    <nav class="public-links"><a href="/about.html">About SAINIG</a><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms of Use</a><a href="mailto:contact@sainig.onrender.com">Contact</a></nav>
+    <nav class="public-links"><a href="/about.html">About SAINIG</a><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms of Use</a><a href="/about.html">About / Contact</a></nav>
   </div>
 </section>
 
@@ -85,7 +85,7 @@ $("discord").addEventListener("click",async()=>{status("Redirecting to Discord�
 $("toggle-mode").addEventListener("click",()=>{mode=mode==="signin"?"signup":"signin";$("email-submit").textContent=mode==="signin"?"Sign in with Email":"Create account";$("toggle-mode").textContent=mode==="signin"?"New here? Create an account":"Already have an account? Sign in";$("heading").textContent=mode==="signin"?"Welcome back":"Create your account";$("subtitle").textContent=mode==="signin"?"Sign in to continue to your account.":"Use your email and a password to get started.";status("")});
 $("email-form").addEventListener("submit",async e=>{e.preventDefault();const email=$("email").value.trim();const password=$("password").value;status(mode==="signin"?"Signing in…":"Creating your account…");let result;if(mode==="signin")result=await client.auth.signInWithPassword({email,password});else result=await client.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});if(result.error){status(result.error.message);return}if(mode==="signup"&&!result.data.session){status("Account created. Check your email to confirm your account, then sign in.");return}if(result.data.user)showAccount(result.data.user)});
 async function showAccount(user){
- $("login").classList.add("hidden");$("member-page").classList.remove("hidden");document.querySelector(".card").classList.add("hidden");document.body.style.padding="0";
+ $("login").classList.add("hidden");$("member-page").classList.remove("hidden");document.querySelector(".card").classList.add("hidden");$("public-info").classList.add("hidden");document.body.style.padding="0";
  const name=user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split("@")[0]||"Yuva Sainik";
  $("nav-name").textContent=name;$("welcome-title").textContent="Welcome, "+name;$("profile-name").textContent=name;$("profile-email").textContent=user.email||"";$("profile-id").textContent="Member ID: "+user.id;$("avatar-letter").textContent=name.trim().charAt(0).toUpperCase()||"Y";
 }
@@ -93,5 +93,5 @@ async function signOut(){await client.auth.signOut();location.reload()}
 $("page-signout").addEventListener("click",signOut);
 client.auth.getSession().then(({data})=>{if(data.session)showAccount(data.session.user)});
 client.auth.onAuthStateChange((_event,session)=>{if(session)showAccount(session.user)});
-$("terms-link").href="#";$("privacy-link").href="#";
+
 </script></body></html>
