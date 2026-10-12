@@ -43,6 +43,8 @@ using (auth.uid() = user_id);
 
 -- No client policies for reward events: only trusted service-role code can insert them.
 revoke all on public.sainig_reward_events from anon, authenticated;
+grant select on public.sainig_coin_balances to authenticated;
+grant select on public.sainig_coin_ledger to authenticated;
 revoke insert, update, delete on public.sainig_coin_balances from anon, authenticated;
 revoke insert, update, delete on public.sainig_coin_ledger from anon, authenticated;
 
