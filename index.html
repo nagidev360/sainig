@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#09090f">
+<title>Sign in · Sainig</title>
+<style>
+:root{color-scheme:dark;--bg:#09090f;--panel:#11111b;--line:#292938;--muted:#a1a1b5;--text:#f7f7fc;--accent:#8b5cf6}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#28204a 0,transparent 48%),var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;display:grid;place-items:center;padding:24px}
+.card{width:min(100%,430px);background:rgba(17,17,27,.94);border:1px solid var(--line);border-radius:24px;padding:34px;box-shadow:0 24px 80px #0006}.brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:20px;letter-spacing:-.5px}.logo{width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,#a78bfa,#6d28d9);display:grid;place-items:center;font-size:21px}.intro{margin:28px 0 22px}.intro h1{font-size:28px;letter-spacing:-1px;margin:0 0 7px}.intro p,.foot{color:var(--muted);margin:0}.providers{display:grid;gap:10px}.provider{width:100%;min-height:48px;border:1px solid #343445;border-radius:12px;background:#191925;color:var(--text);display:flex;align-items:center;justify-content:center;gap:12px;font:600 14px inherit;cursor:pointer;transition:.15s}.provider:hover{border-color:#8b5cf6;background:#211c32}.provider:disabled{opacity:.55;cursor:wait}.ico{width:20px;font-size:17px;font-weight:800}.divider{display:flex;align-items:center;gap:12px;color:#88889e;font-size:12px;margin:21px 0}.divider:before,.divider:after{content:"";height:1px;background:var(--line);flex:1}.field{display:flex;gap:8px}.field input{min-width:0;flex:1;background:#0c0c14;color:white;border:1px solid #343445;border-radius:11px;padding:13px;font:inherit;outline:none}.field input:focus{border-color:var(--accent)}.primary{border:0;border-radius:11px;padding:0 16px;background:var(--accent);color:white;font-weight:700;cursor:pointer}.primary:hover{background:#7c3aed}.otp{margin-top:10px}.hidden{display:none!important}.status{font-size:13px;color:#c4b5fd;min-height:22px;margin-top:12px;overflow-wrap:anywhere}.foot{font-size:12px;text-align:center;margin-top:24px}.foot a{color:#c4b5fd;text-decoration:none}.terms{font-size:12px;color:#85859b;text-align:center;margin-top:14px}.terms a{color:#c4b5fd}.back{background:none;border:0;color:#c4b5fd;cursor:pointer;padding:10px 0 0}.signed{overflow-wrap:anywhere}.signed button{margin-top:14px;padding:10px 14px;border-radius:10px;background:#242436;color:white;border:1px solid var(--line);cursor:pointer}
+@media(max-width:420px){.card{padding:24px}.intro h1{font-size:25px}.field{flex-direction:column}.primary{padding:12px}}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="brand"><div class="logo">S</div><span>Sainig</span></div>
+  <section class="intro"><h1 id="heading">Welcome back</h1><p id="subtitle">Sign in to continue to your account.</p></section>
+  <section id="login">
+    <div class="providers">
+      <button class="provider" data-provider="google"><span class="ico">G</span>Continue with Google</button>
+      <button class="provider" data-provider="github"><span class="ico">⌘</span>Continue with GitHub</button>
+      <button class="provider" data-provider="discord"><span class="ico">◈</span>Continue with Discord</button>
+      <button class="provider" data-provider="azure"><span class="ico">⊞</span>Continue with Microsoft</button>
+    </div>
+    <div class="divider">OR CONTINUE WITH PHONE</div>
+    <form id="phone-form">
+      <div class="field"><input id="phone" type="tel" autocomplete="tel" placeholder="+91 98765 43210" aria-label="Phone number" required><button class="primary" type="submit">Send OTP</button></div>
+    </form>
+    <form id="otp-form" class="otp hidden"><div class="field"><input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter verification code" aria-label="Verification code" required><button class="primary" type="submit">Verify</button></div><button type="button" id="back" class="back">← Change phone number</button></form>
+  </section>
+  <section id="account" class="hidden signed"></section>
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+  <p class="terms">By continuing, you agree to our <a href="#" id="terms-link">Terms</a> and <a href="#" id="privacy-link">Privacy Policy</a>.</p>
+  <p class="foot">Secure sign-in powered by Supabase</p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* Setup: replace these with your Supabase project's public URL and anon/publishable key.
+   Never put a service_role key in browser code. */
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const configured = SUPABASE_URL.startsWith("https://") && !SUPABASE_URL.includes("YOUR_") && !SUPABASE_ANON_KEY.includes("YOUR_");
+const client = configured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const $ = id => document.getElementById(id);
+const status = message => $("status").textContent = message;
+function ready(){if(!client){status("Setup required: add your Supabase URL and publishable/anon key in index.html.");return false}return true}
+document.querySelectorAll("[data-provider]").forEach(button=>button.addEventListener("click",async()=>{
+ if(!ready())return; const provider=button.dataset.provider; status("Redirecting to "+({azure:"Microsoft"}[provider]||provider)+"…");
+ const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+location.pathname}});
+ if(error)status(error.message);
+}));
+$("phone-form").addEventListener("submit",async e=>{
+ e.preventDefault();if(!ready())return;const phone=$("phone").value.trim();status("Sending verification code…");
+ const {error}=await client.auth.signInWithOtp({phone});
+ if(error){status(error.message);return}
+ $("phone-form").classList.add("hidden");$("otp-form").classList.remove("hidden");status("OTP sent. Check your SMS messages.");
+});
+$("otp-form").addEventListener("submit",async e=>{
+ e.preventDefault();if(!ready())return;status("Verifying code…");
+ const {data,error}=await client.auth.verifyOtp({phone:$("phone").value.trim(),token:$("otp").value.trim(),type:"sms"});
+ if(error){status(error.message);return}showAccount(data.user);
+});
+$("back").addEventListener("click",()=>{$("otp-form").classList.add("hidden");$("phone-form").classList.remove("hidden");status("")});
+async function showAccount(user){
+ $("login").classList.add("hidden");$("heading").textContent="You're signed in";$("subtitle").textContent="Your account is ready.";
+ $("account").classList.remove("hidden");const email=document.createElement("p");email.textContent=user.email||user.phone||"Signed-in user";$("account").replaceChildren(email);
+ const out=document.createElement("button");out.textContent="Sign out";out.onclick=async()=>{await client.auth.signOut();location.reload()};$("account").append(out);status("");
+}
+if(client){client.auth.getSession().then(({data})=>{if(data.session)showAccount(data.session.user)});client.auth.onAuthStateChange((_event,session)=>{if(session)showAccount(session.user)})}
+$("terms-link").href="#";$("privacy-link").href="#";
+</script>
+</body></html>
