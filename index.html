@@ -13,7 +13,7 @@
 <div class="brand"><div class="logo">S</div><span>Sainig</span></div>
 <section class="intro"><h1 id="heading">Welcome back</h1><p id="subtitle">Sign in to continue to your account.</p></section>
 <section id="login">
-<div class="providers"><button class="provider" id="discord"><span class="ico">◈</span>Continue with Discord</button></div>
+<div class="providers"><button class="provider" id="google"><span class="ico">G</span>Continue with Google</button><button class="provider" id="discord"><span class="ico">◈</span>Continue with Discord</button></div>
 <div class="divider">OR CONTINUE WITH EMAIL</div>
 <form id="email-form">
 <div class="field"><input id="email" type="email" autocomplete="email" placeholder="Email address" aria-label="Email address" required></div>
@@ -32,6 +32,7 @@ const SUPABASE_ANON_KEY="sb_publishable_1Q2ePgaJT9SSbwQLyds_Sg_EIr9liE0";
 const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const $=id=>document.getElementById(id);const status=message=>$("status").textContent=message;
 let mode="signin";
+$("google").addEventListener("click",async()=>{status("Redirecting to Google…");const {error}=await client.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+location.pathname}});if(error)status(error.message)});
 $("discord").addEventListener("click",async()=>{status("Redirecting to Discord…");const {error}=await client.auth.signInWithOAuth({provider:"discord",options:{redirectTo:location.origin+location.pathname}});if(error)status(error.message)});
 $("toggle-mode").addEventListener("click",()=>{mode=mode==="signin"?"signup":"signin";$("email-submit").textContent=mode==="signin"?"Sign in with Email":"Create account";$("toggle-mode").textContent=mode==="signin"?"New here? Create an account":"Already have an account? Sign in";$("heading").textContent=mode==="signin"?"Welcome back":"Create your account";$("subtitle").textContent=mode==="signin"?"Sign in to continue to your account.":"Use your email and a password to get started.";status("")});
 $("email-form").addEventListener("submit",async e=>{e.preventDefault();const email=$("email").value.trim();const password=$("password").value;status(mode==="signin"?"Signing in…":"Creating your account…");let result;if(mode==="signin")result=await client.auth.signInWithPassword({email,password});else result=await client.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});if(result.error){status(result.error.message);return}if(mode==="signup"&&!result.data.session){status("Account created. Check your email to confirm your account, then sign in.");return}if(result.data.user)showAccount(result.data.user)});
